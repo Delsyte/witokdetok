@@ -1,38 +1,92 @@
 <!doctype html>
-<html>
+<html lang="id">
 <head>
   <meta charset="utf-8" />
-  <title>Daftar Film</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FilmHub</title>
+  <link rel="stylesheet" href="index.css" />
 </head>
 <body>
-  <h1>Daftar Film</h1>
+  <div class="bg"></div>
 
-  <ul id="list"></ul>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">FH</div>
+      <div>
+        <div class="name">FilmHub</div>
+        <div class="tag">Browse • Search • Play</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="search">
+        <input id="q" type="search" placeholder="Cari judul / genre..." autocomplete="off" />
+        <button id="clear" title="Hapus">×</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="heroText">
+        <h1>Tontonan lo, satu tempat</h1>
+        <p>Data film diambil dari Cloudflare KV lewat Worker API. Klik kartu buat nonton.</p>
+        <div class="heroStats">
+          <div class="pill"><span id="count">0</span> judul</div>
+          <div class="pill" id="statusPill">Loading…</div>
+        </div>
+      </div>
+
+      <div class="heroCard">
+        <div class="shine"></div>
+        <div class="heroCardInner">
+          <div>
+            <div class="heroTitle" id="featuredTitle">Featured</div>
+            <div class="heroSub" id="featuredMeta">—</div>
+          </div>
+          <button id="playFeatured" class="btn primary">Play featured</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="sectionHead">
+      <h2>Genre</h2>
+      <div class="muted" id="hint"></div>
+    </section>
+
+    <section id="genres" class="chips"></section>
+
+    <section class="sectionHead">
+      <h2>Semua Film</h2>
+      <div class="muted">Klik kartu untuk nonton</div>
+    </section>
+
+    <section id="grid" class="grid"></section>
+
+    <section id="empty" class="empty hidden">
+      <div class="emptyBox">
+        <div class="emptyIcon">🎬</div>
+        <div class="emptyTitle">Nggak ada hasil</div>
+        <div class="emptySub">Coba kata kunci/genre lain.</div>
+      </div>
+    </section>
+
+    <section id="error" class="error hidden">
+      <div class="errorBox">
+        <div class="errorTitle">Gagal load data</div>
+        <div class="errorSub" id="errorMsg"></div>
+        <button id="retry" class="btn">Coba lagi</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="muted">© <span id="year"></span> FilmHub • Workers + KV</div>
+  </footer>
 
   <script>
-    const API = "https://raspy-violet-ba97.milikyahya997.workers.dev/api/films";
-
-    async function loadFilms() {
-      const res = await fetch(API);
-      const films = await res.json();
-
-      const list = document.getElementById("list");
-
-      films.forEach(f => {
-        const li = document.createElement("li");
-
-        li.innerHTML = `
-          <a href="player.html?title=${encodeURIComponent(f.title)}
-          &embed=${encodeURIComponent(f.embed)}">
-            ${f.title}
-          </a>
-        `;
-
-        list.appendChild(li);
-      });
-    }
-
-    loadFilms();
+    window.API_FILMS = "https://raspy-violet-ba97.milikyahya997.workers.dev/api/films";
   </script>
+  <script src="index.js"></script>
 </body>
 </html>
