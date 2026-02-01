@@ -12,10 +12,6 @@ const errorEl = document.getElementById("error");
 const errorMsgEl = document.getElementById("errorMsg");
 const retryEl = document.getElementById("retry");
 
-const statusPill = document.getElementById("statusPill"); // (di HTML udah gak ada bar judul/online, tapi aman)
-const countEl = document.getElementById("count");         // (masih ada di HTML? tidak—sekarang tidak ada. Jadi kita guard)
-const hintEl = document.getElementById("hint");
-
 const prevBtn = document.getElementById("prev");
 const nextBtn = document.getElementById("next");
 const pageNowEl = document.getElementById("pageNow");
@@ -32,7 +28,8 @@ const PAGE_SIZE = 12;
 function esc(s){
   return String(s ?? "")
     .replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
 function initials(title) {
@@ -66,7 +63,6 @@ function card(f, idx) {
   const genres = normGenres(f.genre);
   const genreText = genres.length ? genres.slice(0,2).join(" • ") : "";
   const meta = [genreText, year].filter(Boolean).join(" • ");
-
   const quality = normQuality(f.quality);
 
   const poster = thumb
@@ -117,7 +113,6 @@ function filteredList() {
     const inGenre = (activeGenre === "All")
       ? true
       : normGenres(f.genre).some(g => g.toLowerCase() === activeGenre.toLowerCase());
-
     if (!inGenre) return false;
 
     if (!q) return true;
@@ -129,12 +124,6 @@ function filteredList() {
 function render() {
   const list = filteredList();
 
-  // hint
-  const q = (qEl?.value || "").trim();
-  hintEl.textContent =
-    `${activeGenre !== "All" ? `Genre: ${activeGenre}` : ""}${q ? ` • Search: “${q}”` : ""}`.trim();
-
-  // pagination
   const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
   if (page > totalPages) page = totalPages;
 
@@ -143,7 +132,6 @@ function render() {
 
   gridEl.innerHTML = pageItems.map((f, i) => card(f, i)).join("");
 
-  // click -> player
   gridEl.querySelectorAll(".card").forEach(el => {
     el.addEventListener("click", () => {
       const idx = Number(el.dataset.idx);
@@ -154,7 +142,6 @@ function render() {
 
   emptyEl.classList.toggle("hidden", list.length !== 0);
 
-  // pager UI
   pagerEl.classList.toggle("hidden", list.length <= PAGE_SIZE);
   pageNowEl.textContent = String(page);
   pageTotalEl.textContent = String(totalPages);
@@ -200,7 +187,6 @@ searchBtn.addEventListener("click", () => {
   if (isHidden) openSearch();
   else closeSearchBar();
 });
-
 closeSearch.addEventListener("click", closeSearchBar);
 
 clearEl.addEventListener("click", () => {
@@ -209,11 +195,7 @@ clearEl.addEventListener("click", () => {
   render();
   qEl?.focus();
 });
-
-qEl.addEventListener("input", () => {
-  page = 1;
-  render();
-});
+qEl.addEventListener("input", () => { page = 1; render(); });
 
 retryEl.addEventListener("click", load);
 
