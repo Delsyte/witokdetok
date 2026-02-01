@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin</title>
+</head>
+<body>
+  <h1>Admin Panel</h1>
+
+  <p>Judul</p>
+  <input id="title" placeholder="Judul film" />
+
+  <p>Embed URL</p>
+  <input id="embed" placeholder="https://www.youtube.com/embed/XXXX" />
+
+  <p>Token Admin</p>
+  <input id="token" placeholder="(rahasia)" />
+
+  <button id="save">Tambah</button>
+  <div id="msg"></div>
+
+  <script>
+    window.API_BASE = "https://NAMA-WORKER.NAMA-AKUN.workers.dev";
+  </script>
+  <script src="admin.js"></script>
+</body>
+</html>
