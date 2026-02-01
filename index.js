@@ -19,6 +19,13 @@ document.getElementById("year").textContent = new Date().getFullYear();
 let all = [];
 let activeGenre = "All";
 
+const ICON = {
+  tag: `<svg viewBox="0 0 24 24" fill="none"><path d="M20 13l-7 7-11-11V2h7l11 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 7h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`,
+  bolt: `<svg viewBox="0 0 24 24" fill="none"><path d="M13 2 3 14h8l-1 8 11-14h-8l1-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`,
+  clock: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  play: `<svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l12-7-12-7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`
+};
+
 function esc(s){
   return String(s ?? "")
     .replaceAll("&","&amp;").replaceAll("<","&lt;")
@@ -28,7 +35,7 @@ function esc(s){
 
 function initials(title) {
   const t = (title || "").trim();
-  if (!t) return "FH";
+  if (!t) return "W";
   return t.split(/\s+/).slice(0, 2).map(x => x[0]?.toUpperCase() || "").join("");
 }
 
@@ -39,19 +46,23 @@ function normGenres(g){
 }
 
 function toPlayerUrl(f) {
-  // kita kirim id juga biar nanti gampang upgrade (kalau mau player fetch by id)
   const title = encodeURIComponent(f.title || "Untitled");
   const embed = encodeURIComponent(f.embed || "");
   const id = encodeURIComponent(f.id || "");
   return `./player.html?id=${id}&title=${title}&embed=${embed}`;
 }
 
+function badge(iconSvg, text) {
+  return `<span class="badge">${iconSvg}${esc(text)}</span>`;
+}
+
 function card(f, idx) {
   const genres = normGenres(f.genre);
   const genreText = genres.length ? genres.join(" • ") : "—";
+
   const metaBits = [];
-  if (f.year) metaBits.push(esc(f.year));
-  if (f.duration) metaBits.push(esc(f.duration));
+  if (f.year) metaBits.push(String(f.year));
+  if (f.duration) metaBits.push(String(f.duration));
   const metaLine = metaBits.length ? metaBits.join(" • ") : "";
 
   const thumb = (f.thumb || "").trim();
@@ -65,10 +76,10 @@ function card(f, idx) {
       <div class="body">
         <div class="title">${esc(f.title || "Untitled")}</div>
         <div class="meta">
-          <span class="badge">🎭 ${esc(genreText)}</span>
-          ${f.source ? `<span class="badge">⚡ ${esc(f.source)}</span>` : ""}
-          ${metaLine ? `<span class="badge">⏱ ${esc(metaLine)}</span>` : ""}
-          <span class="badge">▶ Play</span>
+          ${badge(ICON.tag, genreText)}
+          ${f.source ? badge(ICON.bolt, f.source) : ""}
+          ${metaLine ? badge(ICON.clock, metaLine) : ""}
+          ${badge(ICON.play, "Play")}
         </div>
         ${f.desc ? `<div class="meta" style="margin-top:8px">${esc(f.desc)}</div>` : ""}
       </div>
@@ -109,9 +120,9 @@ function applyFilter() {
     return (f.title || "").toLowerCase().includes(q) || gtxt.includes(q);
   });
 
-  hintEl.textContent = `${activeGenre !== "All" ? `Genre: ${activeGenre}` : ""}${q ? ` • Cari: “${q}”` : ""}`.trim();
-  gridEl.innerHTML = filtered.map((f, i) => card(f, i)).join("");
+  hintEl.textContent = `${activeGenre !== "All" ? `Genre: ${activeGenre}` : ""}${q ? ` • Search: “${q}”` : ""}`.trim();
 
+  gridEl.innerHTML = filtered.map((f, i) => card(f, i)).join("");
   emptyEl.classList.toggle("hidden", filtered.length !== 0);
   countEl.textContent = String(filtered.length);
 
@@ -123,7 +134,6 @@ function applyFilter() {
     });
   });
 
-  // featured
   const featured = filtered[0] || all[0];
   if (featured) {
     featuredTitleEl.textContent = featured.title || "Featured";
@@ -144,7 +154,7 @@ function applyFilter() {
 
 async function load() {
   errorEl.classList.add("hidden");
-  statusPill.textContent = "Loading…";
+  statusPill.textContent = "Loading";
 
   try {
     const res = await fetch(window.API_FILMS, { cache: "no-store" });
@@ -158,7 +168,7 @@ async function load() {
   } catch (e) {
     console.error(e);
     statusPill.textContent = "Error";
-    errorMsgEl.textContent = `API gagal: ${e.message}`;
+    errorMsgEl.textContent = `API failed: ${e.message}`;
     errorEl.classList.remove("hidden");
     gridEl.innerHTML = "";
     emptyEl.classList.add("hidden");
