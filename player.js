@@ -95,28 +95,48 @@ function isDirectVideo(url){
   return u.includes(".mp4") || u.includes(".m3u8");
 }
 
-function renderPlayer(embedUrl){
-  const url = String(embedUrl || "").trim();
-  if (!url) throw new Error("Embed kosong");
+// 🔥 Core: smart render
+function renderPlayer(url){
+  const u = String(url || "").trim();
+  if (!u) throw new Error("Embed kosong");
 
-  // Direct video => <video>
-  if (isDirectVideo(url)) {
+  // ✅ Fileditch (MP4 tapi gak bisa <video>) => iframe
+  const isFileditch = u.includes("fileditchfiles.me") || u.includes("fileditch.com");
+  if (isFileditch) {
     mount.innerHTML = `
-      <video controls playsinline autoplay preload="metadata">
-        <source src="${esc(url)}" type="${url.includes('.m3u8') ? 'application/vnd.apple.mpegurl' : 'video/mp4'}">
+      <iframe
+        src="${esc(u)}"
+        title="Player"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowfullscreen
+        referrerpolicy="no-referrer"
+        style="width:100%;height:100%;border:0;display:block;background:black"
+      ></iframe>
+    `;
+    return;
+  }
+
+  // ✅ Direct mp4 / m3u8 => <video>
+  if (isDirectVideo(u)) {
+    const type = u.includes(".m3u8") ? "application/vnd.apple.mpegurl" : "video/mp4";
+    mount.innerHTML = `
+      <video controls playsinline preload="metadata" style="width:100%;height:100%;display:block;background:black">
+        <source src="${esc(u)}" type="${type}">
+        Browser kamu tidak support video.
       </video>
     `;
     return;
   }
 
-  // else => iframe
+  // ✅ Default embed => iframe
   mount.innerHTML = `
     <iframe
-      src="${esc(url)}"
+      src="${esc(u)}"
       title="Player"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
       allowfullscreen
       referrerpolicy="no-referrer"
+      style="width:100%;height:100%;border:0;display:block;background:black"
     ></iframe>
   `;
 }
@@ -167,20 +187,20 @@ async function load(){
     }
 
     const embed = String(current.embed || embedParam || "").trim();
+
+    // ✅ render player smart
     renderPlayer(embed);
 
+    // info
     titleEl.textContent = current.title || "Untitled";
     descEl.textContent = current.desc || "";
     qualityBadge.textContent = normQuality(current.quality);
     renderMeta(current);
 
-    // open/copy
+    // buttons
     openEmbedBtn.onclick = () => window.open(embed, "_blank", "noopener,noreferrer");
-    copyEmbedBtn.onclick = async () => {
-      try{ await navigator.clipboard.writeText(embed); }catch{}
-    };
+    copyEmbedBtn.onclick = async () => { try{ await navigator.clipboard.writeText(embed); }catch{} };
 
-    // share
     shareBtn.onclick = async () => {
       try{
         const shareUrl = location.href;
@@ -189,7 +209,7 @@ async function load(){
       } catch {}
     };
 
-    // prev/next (based on list order)
+    // prev/next (order list)
     const prev = (currentIdx > 0) ? films[currentIdx - 1] : null;
     const next = (currentIdx >= 0 && currentIdx < films.length - 1) ? films[currentIdx + 1] : null;
 
