@@ -10,21 +10,10 @@ const hintEl = document.getElementById("hint");
 const statusPill = document.getElementById("statusPill");
 const genresEl = document.getElementById("genres");
 
-const featuredTitleEl = document.getElementById("featuredTitle");
-const featuredMetaEl = document.getElementById("featuredMeta");
-const playFeaturedBtn = document.getElementById("playFeatured");
-
 document.getElementById("year").textContent = new Date().getFullYear();
 
 let all = [];
 let activeGenre = "All";
-
-const ICON = {
-  tag: `<svg viewBox="0 0 24 24" fill="none"><path d="M20 13l-7 7-11-11V2h7l11 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 7h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`,
-  bolt: `<svg viewBox="0 0 24 24" fill="none"><path d="M13 2 3 14h8l-1 8 11-14h-8l1-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`,
-  clock: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
-  play: `<svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l12-7-12-7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`
-};
 
 function esc(s){
   return String(s ?? "")
@@ -35,7 +24,7 @@ function esc(s){
 
 function initials(title) {
   const t = (title || "").trim();
-  if (!t) return "W";
+  if (!t) return "WK";
   return t.split(/\s+/).slice(0, 2).map(x => x[0]?.toUpperCase() || "").join("");
 }
 
@@ -52,36 +41,24 @@ function toPlayerUrl(f) {
   return `./player.html?id=${id}&title=${title}&embed=${embed}`;
 }
 
-function badge(iconSvg, text) {
-  return `<span class="badge">${iconSvg}${esc(text)}</span>`;
-}
-
 function card(f, idx) {
-  const genres = normGenres(f.genre);
-  const genreText = genres.length ? genres.join(" • ") : "—";
-
-  const metaBits = [];
-  if (f.year) metaBits.push(String(f.year));
-  if (f.duration) metaBits.push(String(f.duration));
-  const metaLine = metaBits.length ? metaBits.join(" • ") : "";
-
   const thumb = (f.thumb || "").trim();
-  const thumbHtml = thumb
-    ? `<img class="thumb" src="${esc(thumb)}" alt="${esc(f.title)}" loading="lazy" />`
-    : `<div class="fallback"><div class="fallbackText">${initials(f.title)}</div></div>`;
+  const year = f.year ? String(f.year) : "";
+  const genres = normGenres(f.genre);
+  const genreText = genres.length ? genres.slice(0,2).join(" • ") : "";
+
+  const meta = [genreText, year].filter(Boolean).join(" • ");
+
+  const posterHtml = thumb
+    ? `<div class="poster"><img src="${esc(thumb)}" alt="${esc(f.title)}" loading="lazy"></div>`
+    : `<div class="poster"><div class="posterFallback"><span>${esc(initials(f.title))}</span></div></div>`;
 
   return `
     <article class="card" data-idx="${idx}">
-      ${thumbHtml}
+      ${posterHtml}
       <div class="body">
-        <div class="title">${esc(f.title || "Untitled")}</div>
-        <div class="meta">
-          ${badge(ICON.tag, genreText)}
-          ${f.source ? badge(ICON.bolt, f.source) : ""}
-          ${metaLine ? badge(ICON.clock, metaLine) : ""}
-          ${badge(ICON.play, "Play")}
-        </div>
-        ${f.desc ? `<div class="meta" style="margin-top:8px">${esc(f.desc)}</div>` : ""}
+        <p class="title">${esc(f.title || "Untitled")}</p>
+        ${meta ? `<div class="sub">${esc(meta)}</div>` : `<div class="sub">&nbsp;</div>`}
       </div>
     </article>
   `;
@@ -120,7 +97,8 @@ function applyFilter() {
     return (f.title || "").toLowerCase().includes(q) || gtxt.includes(q);
   });
 
-  hintEl.textContent = `${activeGenre !== "All" ? `Genre: ${activeGenre}` : ""}${q ? ` • Search: “${q}”` : ""}`.trim();
+  hintEl.textContent =
+    `${activeGenre !== "All" ? `Genre: ${activeGenre}` : ""}${q ? ` • Search: “${q}”` : ""}`.trim();
 
   gridEl.innerHTML = filtered.map((f, i) => card(f, i)).join("");
   emptyEl.classList.toggle("hidden", filtered.length !== 0);
@@ -133,23 +111,6 @@ function applyFilter() {
       location.href = toPlayerUrl(f);
     });
   });
-
-  const featured = filtered[0] || all[0];
-  if (featured) {
-    featuredTitleEl.textContent = featured.title || "Featured";
-    const bits = [];
-    const genres = normGenres(featured.genre);
-    if (genres.length) bits.push(genres.join(" • "));
-    if (featured.year) bits.push(featured.year);
-    if (featured.duration) bits.push(featured.duration);
-    featuredMetaEl.textContent = bits.length ? bits.join(" • ") : "—";
-    playFeaturedBtn.disabled = false;
-    playFeaturedBtn.onclick = () => location.href = toPlayerUrl(featured);
-  } else {
-    featuredTitleEl.textContent = "Featured";
-    featuredMetaEl.textContent = "—";
-    playFeaturedBtn.disabled = true;
-  }
 }
 
 async function load() {
