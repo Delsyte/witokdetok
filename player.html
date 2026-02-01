@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Player</title>
+</head>
+<body>
+  <a href="index.html">← balik</a>
+  <h1 id="t">Loading…</h1>
+
+  <iframe id="p"
+    width="900" height="500"
+    allow="autoplay; encrypted-media; picture-in-picture"
+    allowfullscreen></iframe>
+
+  <script>
+    const q = new URLSearchParams(location.search);
+    document.getElementById("t").textContent = q.get("title") || "Untitled";
+    document.getElementById("p").src = q.get("embed") || "";
+  </script>
+</body>
+</html>
