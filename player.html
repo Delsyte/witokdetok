@@ -1,23 +1,48 @@
 <!doctype html>
-<html>
+<html lang="id">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Player</title>
+  <link rel="stylesheet" href="index.css" />
+  <style>
+    .playerWrap{max-width:1160px;margin:0 auto;padding:16px}
+    .back{color:#9ecbff;text-decoration:none}
+    .row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:10px}
+    .panel{border:1px solid rgba(255,255,255,.10);background:rgba(18,23,38,.78);border-radius:20px;padding:12px}
+    .ratio{position:relative;width:100%;padding-top:56.25%}
+    .ratio iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:14px}
+    .h{margin:0;font-weight:950}
+    .metaLine{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;color:rgba(234,240,255,.72);font-size:12px}
+    .desc{margin-top:10px;color:rgba(234,240,255,.72);line-height:1.45}
+    @media(max-width:900px){.row{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
-  <a href="index.html">← balik</a>
-  <h1 id="t">Loading…</h1>
+  <div class="bg"></div>
 
-  <iframe id="p"
-    width="900" height="500"
-    allow="autoplay; encrypted-media; picture-in-picture"
-    allowfullscreen></iframe>
+  <div class="playerWrap">
+    <a class="back" href="./index.html">← Balik</a>
+    <h1 id="t" class="h" style="margin-top:10px">Loading…</h1>
 
-  <script>
-    const q = new URLSearchParams(location.search);
-    document.getElementById("t").textContent = q.get("title") || "Untitled";
-    document.getElementById("p").src = q.get("embed") || "";
-  </script>
+    <div class="row">
+      <div class="panel">
+        <div class="ratio">
+          <iframe id="p" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="metaLine" id="meta"></div>
+        <div class="desc" id="desc"></div>
+        <div class="metaLine" style="margin-top:12px">
+          <span class="badge">Tip</span>
+          <span class="badge">Embed harus versi /embed/…</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="player.js"></script>
 </body>
 </html>
