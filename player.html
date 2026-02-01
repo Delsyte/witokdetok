@@ -3,46 +3,96 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Player</title>
-  <link rel="stylesheet" href="index.css" />
-  <style>
-    .playerWrap{max-width:1160px;margin:0 auto;padding:16px}
-    .back{color:#9ecbff;text-decoration:none}
-    .row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:10px}
-    .panel{border:1px solid rgba(255,255,255,.10);background:rgba(18,23,38,.78);border-radius:20px;padding:12px}
-    .ratio{position:relative;width:100%;padding-top:56.25%}
-    .ratio iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:14px}
-    .h{margin:0;font-weight:950}
-    .metaLine{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;color:rgba(234,240,255,.72);font-size:12px}
-    .desc{margin-top:10px;color:rgba(234,240,255,.72);line-height:1.45}
-    @media(max-width:900px){.row{grid-template-columns:1fr}}
-  </style>
+  <title>Player • Witokdetok</title>
+  <link rel="stylesheet" href="player.css" />
 </head>
 <body>
   <div class="bg"></div>
 
-  <div class="playerWrap">
-    <a class="back" href="./index.html">← Balik</a>
-    <h1 id="t" class="h" style="margin-top:10px">Loading…</h1>
+  <header class="topbar">
+    <a class="iconBtn" href="./index.html" aria-label="Back" title="Back">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
 
-    <div class="row">
-      <div class="panel">
-        <div class="ratio">
-          <iframe id="p" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="metaLine" id="meta"></div>
-        <div class="desc" id="desc"></div>
-        <div class="metaLine" style="margin-top:12px">
-          <span class="badge">Tip</span>
-          <span class="badge">Embed harus versi /embed/…</span>
-        </div>
-      </div>
+    <div class="brand">
+      <div class="logo">WK</div>
+      <div class="name">Witokdetok</div>
     </div>
-  </div>
 
+    <button id="shareBtn" class="iconBtn" aria-label="Share" title="Share">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <path d="M16 8a3 3 0 1 0-2.83-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M8 12l8-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M16 20a3 3 0 1 1-2.83-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M8 12l8 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M5 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2"/>
+      </svg>
+    </button>
+  </header>
+
+  <main class="wrap">
+    <!-- Player Card -->
+    <section class="playerCard">
+      <div class="videoShell" id="videoShell">
+        <div class="videoTop">
+          <div class="qBadge" id="qualityBadge">HD</div>
+          <button id="openEmbed" class="chip" type="button" title="Open embed in new tab">
+            Open
+          </button>
+        </div>
+
+        <div class="video">
+          <iframe
+            id="frame"
+            src=""
+            title="Player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            referrerpolicy="no-referrer"
+          ></iframe>
+        </div>
+      </div>
+
+      <div class="info">
+        <h1 class="title" id="title">Loading…</h1>
+        <div class="meta" id="meta"></div>
+        <div class="desc" id="desc"></div>
+      </div>
+    </section>
+
+    <!-- Random -->
+    <section class="section">
+      <div class="sectionHead">
+        <div class="sectionTitle">Random lainnya</div>
+        <div class="muted">Klik poster buat nonton.</div>
+      </div>
+      <div id="grid" class="grid"></div>
+      <div id="empty" class="empty hidden">
+        <div class="emptyBox">
+          <div class="emptyTitle">No recommendations</div>
+          <div class="emptySub">Tambah film lagi biar makin rame.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="error" class="error hidden">
+      <div class="errorBox">
+        <div class="errorTitle">Failed to load</div>
+        <div class="errorSub" id="errorMsg"></div>
+        <button id="retry" class="btn">Retry</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="muted">© <span id="year"></span> Witokdetok</div>
+  </footer>
+
+  <script>
+    window.API_FILMS = "https://raspy-violet-ba97.milikyahya997.workers.dev/api/films";
+  </script>
   <script src="player.js"></script>
 </body>
 </html>
