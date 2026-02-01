@@ -1,10 +1,16 @@
-const frame = document.getElementById("frame");
+const mount = document.getElementById("playerMount");
+
 const titleEl = document.getElementById("title");
 const metaEl = document.getElementById("meta");
 const descEl = document.getElementById("desc");
 const qualityBadge = document.getElementById("qualityBadge");
+
 const openEmbedBtn = document.getElementById("openEmbed");
+const copyEmbedBtn = document.getElementById("copyEmbed");
 const shareBtn = document.getElementById("shareBtn");
+
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
 
 const gridEl = document.getElementById("grid");
 const emptyEl = document.getElementById("empty");
@@ -36,6 +42,7 @@ function normQuality(q){
   const v = String(q || "").trim().toUpperCase();
   return v || "HD";
 }
+function pill(text){ return `<span class="pill">${esc(text)}</span>`; }
 
 function getParam(name){
   const u = new URL(location.href);
@@ -83,8 +90,35 @@ function card(f, idx) {
   `;
 }
 
-function pill(text){
-  return `<span class="pill">${esc(text)}</span>`;
+function isDirectVideo(url){
+  const u = (url || "").toLowerCase();
+  return u.includes(".mp4") || u.includes(".m3u8");
+}
+
+function renderPlayer(embedUrl){
+  const url = String(embedUrl || "").trim();
+  if (!url) throw new Error("Embed kosong");
+
+  // Direct video => <video>
+  if (isDirectVideo(url)) {
+    mount.innerHTML = `
+      <video controls playsinline autoplay preload="metadata">
+        <source src="${esc(url)}" type="${url.includes('.m3u8') ? 'application/vnd.apple.mpegurl' : 'video/mp4'}">
+      </video>
+    `;
+    return;
+  }
+
+  // else => iframe
+  mount.innerHTML = `
+    <iframe
+      src="${esc(url)}"
+      title="Player"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+      referrerpolicy="no-referrer"
+    ></iframe>
+  `;
 }
 
 function renderMeta(f){
@@ -101,7 +135,6 @@ function renderMeta(f){
 }
 
 function pickRandom(list, count){
-  // Fisher–Yates shuffle copy
   const a = list.slice();
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -122,54 +155,55 @@ async function load(){
     const films = await res.json();
     if (!Array.isArray(films)) throw new Error("Bad data");
 
-    // cari film sekarang: prioritas id, fallback title+embed
+    let currentIdx = -1;
     let current =
-      (id && films.find(f => String(f.id || "") === String(id))) ||
-      films.find(f => String(f.embed || "") === String(embedParam)) ||
-      films.find(f => String(f.title || "") === String(titleParam));
+      (id && films.find((f, i) => (String(f.id || "") === String(id)) ? (currentIdx = i, true) : false)) ||
+      films.find((f, i) => (String(f.embed || "") === String(embedParam)) ? (currentIdx = i, true) : false) ||
+      films.find((f, i) => (String(f.title || "") === String(titleParam)) ? (currentIdx = i, true) : false);
 
-    // fallback: pakai query param
     if (!current) {
-      current = {
-        id: id || "",
-        title: titleParam || "Untitled",
-        embed: embedParam,
-        quality: "HD",
-        genre: [],
-        desc: "",
-      };
+      current = { id: id || "", title: titleParam || "Untitled", embed: embedParam, quality: "HD", genre: [], desc: "" };
+      currentIdx = -1;
     }
 
-    // set player
     const embed = String(current.embed || embedParam || "").trim();
-    if (!embed) throw new Error("Embed kosong");
+    renderPlayer(embed);
 
-    frame.src = embed;
     titleEl.textContent = current.title || "Untitled";
     descEl.textContent = current.desc || "";
-    const q = normQuality(current.quality);
-    qualityBadge.textContent = q;
-
-    openEmbedBtn.onclick = () => window.open(embed, "_blank", "noopener,noreferrer");
-
+    qualityBadge.textContent = normQuality(current.quality);
     renderMeta(current);
+
+    // open/copy
+    openEmbedBtn.onclick = () => window.open(embed, "_blank", "noopener,noreferrer");
+    copyEmbedBtn.onclick = async () => {
+      try{ await navigator.clipboard.writeText(embed); }catch{}
+    };
 
     // share
     shareBtn.onclick = async () => {
       try{
         const shareUrl = location.href;
-        if (navigator.share) {
-          await navigator.share({ title: current.title || "Witokdetok", url: shareUrl });
-        } else {
-          await navigator.clipboard.writeText(shareUrl);
-          shareBtn.blur();
-        }
+        if (navigator.share) await navigator.share({ title: current.title || "Witokdetok", url: shareUrl });
+        else await navigator.clipboard.writeText(shareUrl);
       } catch {}
     };
 
-    // random section
-    const others = films.filter(f => String(f.id || "") !== String(current.id || ""))
-                        .filter(f => String(f.embed || "") !== String(embed));
+    // prev/next (based on list order)
+    const prev = (currentIdx > 0) ? films[currentIdx - 1] : null;
+    const next = (currentIdx >= 0 && currentIdx < films.length - 1) ? films[currentIdx + 1] : null;
+
+    prevBtn.disabled = !prev;
+    nextBtn.disabled = !next;
+
+    prevBtn.onclick = () => { if (prev) location.href = toPlayerUrl(prev); };
+    nextBtn.onclick = () => { if (next) location.href = toPlayerUrl(next); };
+
+    // random recommendations
+    const others = films
+      .filter(f => String(f.id || "") !== String(current.id || ""))
+      .filter(f => String(f.embed || "") !== String(embed));
+
     const picks = pickRandom(others, 9);
 
     gridEl.innerHTML = picks.map((f,i)=>card(f,i)).join("");
