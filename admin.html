@@ -1,27 +1,76 @@
 <!doctype html>
-<html>
+<html lang="id">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin</title>
+  <title>Admin • Witokdetok</title>
+  <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
-  <h1>Admin Panel</h1>
+  <div class="bg"></div>
 
-  <p>Judul</p>
-  <input id="title" placeholder="Judul film" />
+  <header class="topbar">
+    <a class="back" href="./index.html" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="title">Admin</div>
+    <button id="refresh" class="iconBtn" aria-label="Refresh" title="Refresh">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <path d="M20 12a8 8 0 1 1-2.34-5.66" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M20 4v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </header>
 
-  <p>Embed URL</p>
-  <input id="embed" placeholder="https://www.youtube.com/embed/XXXX" />
+  <main class="wrap">
+    <section class="card">
+      <h2>Token</h2>
+      <div class="row">
+        <input id="token" type="password" placeholder="ADMIN_TOKEN" />
+        <button id="saveToken" class="btn">Save</button>
+      </div>
+      <div class="hint">Token disimpan di browser (localStorage). Jangan share.</div>
+    </section>
 
-  <p>Token Admin</p>
-  <input id="token" placeholder="(rahasia)" />
+    <section class="card">
+      <h2 id="formTitle">Tambah Film</h2>
 
-  <button id="save">Tambah</button>
-  <div id="msg"></div>
+      <input id="id" type="text" placeholder="id (auto kalau kosong)" />
+      <input id="title" type="text" placeholder="title (wajib)" />
+      <input id="embed" type="text" placeholder="embed URL (wajib) contoh: https://www.youtube.com/embed/..." />
+      <input id="thumb" type="text" placeholder="thumb URL (poster)" />
+
+      <div class="row2">
+        <input id="year" type="number" placeholder="year" />
+        <input id="duration" type="text" placeholder="duration (misal 1j 42m)" />
+      </div>
+
+      <div class="row2">
+        <input id="quality" type="text" placeholder="quality (HD/WEB-DL/BLURAY)" />
+        <input id="source" type="text" placeholder="source (YouTube/Stream/etc)" />
+      </div>
+
+      <input id="genre" type="text" placeholder="genre (pisah koma) مثال: Action, Drama" />
+      <textarea id="desc" placeholder="desc"></textarea>
+
+      <div class="row">
+        <button id="submit" class="btn primary">Save</button>
+        <button id="reset" class="btn">Reset</button>
+      </div>
+
+      <div id="msg" class="msg"></div>
+    </section>
+
+    <section class="card">
+      <h2>Daftar Film</h2>
+      <div id="list" class="list"></div>
+    </section>
+  </main>
 
   <script>
-    window.API_BASE = "https://NAMA-WORKER.NAMA-AKUN.workers.dev";
+    window.API_FILMS = "https://raspy-violet-ba97.milikyahya997.workers.dev/api/films";
   </script>
   <script src="admin.js"></script>
 </body>
