@@ -3,133 +3,107 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Player • Witokdetok</title>
-  <link rel="stylesheet" href="./styles.css" />
-  <style>
-    /* tambahan kecil untuk server buttons */
-    .serverRow{ display:flex; gap:12px; margin:14px 0 0; }
-    .srvBtn{
-      flex:1;
-      padding:14px 12px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.04);
-      color:#fff;
-      font-weight:650;
-      letter-spacing:.2px;
-      opacity:.92;
-    }
-    .srvBtn:disabled{ opacity:.35; }
-    .srvBtn.active{
-      background:linear-gradient(135deg,#4f7cff,#3aa9ff);
-      border:none;
-      opacity:1;
-    }
-    .blockedBox{
-      width:100%;
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      gap:10px;
-      padding:22px;
-      background:rgba(0,0,0,.35);
-    }
-    .blockedBox .btnPrimary{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      padding:12px 16px;
-      border-radius:14px;
-      background:linear-gradient(135deg,#4f7cff,#3aa9ff);
-      color:#fff;
-      text-decoration:none;
-      font-weight:700;
-      border:0;
-    }
-    .hint{ opacity:.7; font-size:13px; line-height:1.45; }
-  </style>
+  <title>Witokdetok — Player</title>
+  <link rel="stylesheet" href="./player.css" />
 </head>
-
 <body>
   <header class="topbar">
-    <a class="iconBtn" href="./index.html" aria-label="Back">
+    <a class="iconBtn" href="./index.html" aria-label="Kembali">
       <!-- back svg -->
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </a>
 
     <div class="brand">
       <div class="logo">WK</div>
-      <div class="brandText">Witokdetok</div>
+      <div class="name">Witokdetok</div>
     </div>
 
-    <button class="iconBtn" id="shareBtn" aria-label="Share">
+    <button id="shareBtn" class="iconBtn" aria-label="Bagikan">
       <!-- share svg -->
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M15 8a3 3 0 10-2.83-4H12a3 3 0 003 4zM6 14a3 3 0 10-2.83-4H3a3 3 0 003 4zm9 10a3 3 0 10-2.83-4H12a3 3 0 003 4z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M8.6 12.7l6.8 3.6M15.4 7.7L8.6 11.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M15 8a3 3 0 10-2.83-4H12a3 3 0 003 3zM6 14a3 3 0 10-2.83-4H3a3 3 0 003 3zm9 9a3 3 0 10-2.83-4H12a3 3 0 003 3z" opacity=".0"/>
+        <path d="M15 8a3 3 0 10-2.83-4H12a3 3 0 003 3z" opacity="0"/>
+        <path d="M16 7.5a3 3 0 11-1.5-2.6" opacity="0"/>
+        <path d="M16 7a3 3 0 10 0.001 0z" opacity="0"/>
+        <path d="M16 7a3 3 0 10 0.001 0z" opacity="0"/>
+        <path d="M16 7a3 3 0 10 0.001 0z" opacity="0"/>
+        <path d="M16 7a3 3 0 10 0.001 0z" opacity="0"/>
+        <path d="M16 7a3 3 0 10 0.001 0z" opacity="0"/>
+        <path d="M16 7a3 3 0 10 0.001 0z" opacity="0"/>
+        <path d="M16 7a3 3 0 10 0.001 0z" opacity="0"/>
+        <path d="M16 7a3 3 0 10 0.001 0z" opacity="0"/>
+
+        <path d="M16.5 6.5a2.5 2.5 0 10 0.001 0z" opacity="0"/>
+        <path d="M16.5 6.5a2.5 2.5 0 10 0.001 0z" opacity="0"/>
+
+        <path d="M16 6.5a2.5 2.5 0 10 0.001 0z" opacity="0"/>
+
+        <path d="M18 8a3 3 0 10-2.83-4H15a3 3 0 003 3z" opacity="0"/>
+
+        <path d="M18 8a3 3 0 10-2.83-4H15a3 3 0 003 3z" opacity="0"/>
+
+        <path d="M18 8a3 3 0 10-2.83-4H15a3 3 0 003 3z" opacity="0"/>
+
+        <path d="M18 8a3 3 0 10-2.83-4H15a3 3 0 003 3z" opacity="0"/>
+
+        <path d="M18 8a3 3 0 10-2.83-4H15a3 3 0 003 3z" opacity="0"/>
+
+        <!-- actual share icon -->
+        <path d="M16 6.5a2.5 2.5 0 10 0.001 0zM6 13.5a2.5 2.5 0 10 0.001 0zM16 20.5a2.5 2.5 0 10 0.001 0z"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8.2 12.4l5.6-3.2M8.2 14.6l5.6 3.2"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </button>
   </header>
 
   <main class="container">
-
-    <!-- PLAYER CARD -->
-    <section class="cardGlass">
-      <div class="playerTopRow">
-        <span class="qBadge" id="qualityBadge">HD</span>
-        <div class="topActions">
-          <button class="miniBtn" id="openEmbed">Open</button>
-          <button class="miniBtn" id="copyEmbed">Copy</button>
+    <section class="playerCard">
+      <div class="playerTop">
+        <span id="qualityBadge" class="qBadge">HD</span>
+        <div class="playerActions">
+          <button id="openEmbed" class="chipBtn">Open</button>
+          <button id="copyEmbed" class="chipBtn">Copy</button>
         </div>
       </div>
 
-      <div class="playerBox" id="playerMount"></div>
-
-      <!-- SERVER SWITCH -->
-      <div class="serverRow">
-        <button id="srv1" class="srvBtn active">Server 1</button>
-        <button id="srv2" class="srvBtn">Server 2</button>
-        <button id="srv3" class="srvBtn">Server 3</button>
+      <div class="playerBox">
+        <div id="playerMount" class="mount"></div>
       </div>
+
+      <!-- ✅ tempat tombol server -->
+      <div id="serverRow" class="serverRow"></div>
+
       <p class="hint">Kalau server 1 lemot/mati, ganti ke server lain.</p>
     </section>
 
-    <!-- INFO -->
-    <section class="infoBlock">
-      <h1 class="h1" id="title">Loading…</h1>
-      <div class="meta" id="meta"></div>
-      <p class="desc" id="desc"></p>
+    <section class="detail">
+      <h1 id="title" class="h1">Judul</h1>
+      <div id="meta" class="meta"></div>
+      <p id="desc" class="desc"></p>
     </section>
 
-    <!-- ERROR -->
-    <section id="error" class="errorBox hidden">
-      <h3>Failed to load</h3>
-      <p id="errorMsg">Error</p>
-      <button class="miniBtn" id="retry">Retry</button>
+    <section class="more">
+      <div class="moreHead">
+        <h2>Film lainnya</h2>
+      </div>
+      <div id="empty" class="empty hidden">Belum ada rekomendasi.</div>
+      <div id="grid" class="grid"></div>
     </section>
-
-    <!-- RECOMMEND -->
-    <section class="sectionHead">
-      <h2>Film lainnya</h2>
-    </section>
-
-    <section id="empty" class="emptyBox hidden">
-      <p>No results</p>
-    </section>
-
-    <section class="grid" id="grid"></section>
 
     <footer class="footer">© <span id="year"></span> Witokdetok</footer>
+
+    <div id="error" class="error hidden">
+      <div class="errorTitle">Failed to load</div>
+      <div id="errorMsg" class="errorMsg">API failed</div>
+      <button id="retry" class="chipBtn">Retry</button>
+    </div>
   </main>
 
   <script>
-    /* set API endpoint lo (samain dengan index) */
+    // ganti ini sesuai endpoint worker kamu
     window.API_FILMS = "https://raspy-violet-ba97.milikyahya997.workers.dev/api/films";
   </script>
   <script src="./player.js"></script>
