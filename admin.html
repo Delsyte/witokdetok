@@ -1,16 +1,114 @@
+<!-- admin.html -->
 <!doctype html>
 <html lang="id">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin • Witokdetok</title>
-  <link rel="stylesheet" href="admin.css" />
+  <style>
+    :root{
+      --bg:#0b0c10; --text:#eaf0ff; --muted:rgba(234,240,255,.72);
+      --line:rgba(255,255,255,.10); --card:rgba(18,23,38,.72);
+    }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    body{margin:0;background:var(--bg);color:var(--text);overflow-x:hidden}
+    .bg{
+      position:fixed;inset:-40px;z-index:-1;
+      background:
+        radial-gradient(900px 500px at 10% 10%, rgba(99,102,241,.20), transparent 60%),
+        radial-gradient(900px 500px at 90% 20%, rgba(56,189,248,.16), transparent 55%),
+        radial-gradient(700px 400px at 40% 90%, rgba(34,197,94,.10), transparent 55%);
+    }
+    .topbar{
+      position:sticky;top:0;z-index:20;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:12px 14px;
+      backdrop-filter: blur(10px);
+      background: rgba(11,12,16,.72);
+      border-bottom:1px solid var(--line);
+    }
+    .title{font-weight:900;letter-spacing:.2px}
+    .iconBtn{
+      width:40px;height:40px;border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(18,23,38,.65);
+      color:rgba(234,240,255,.9);
+      display:grid;place-items:center;
+      cursor:pointer;
+    }
+    .wrap{max-width:920px;margin:0 auto;padding:14px 12px 24px}
+    .card{
+      border:1px solid var(--line);
+      background: var(--card);
+      border-radius:18px;
+      padding:12px;
+      margin-top:12px;
+    }
+    h2{margin:0 0 10px;font-size:14px;font-weight:900}
+    .hint{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.5}
+    .msg{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.4}
+    input, textarea{
+      width:100%;
+      border:1px solid var(--line);
+      background: rgba(18,23,38,.55);
+      color:var(--text);
+      padding:12px 12px;
+      border-radius:14px;
+      outline:none;
+      font-size:14px;
+      margin-top:10px;
+    }
+    textarea{min-height:110px;resize:vertical}
+    .row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.07);
+      color:var(--text);
+      padding:10px 14px;border-radius:999px;
+      cursor:pointer;
+    }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(99,102,241,.95), rgba(56,189,248,.90));
+      border-color: transparent;
+      font-weight:900;
+    }
+    .list{display:grid;gap:10px;margin-top:10px}
+    .item{
+      border:1px solid var(--line);
+      background: rgba(18,23,38,.55);
+      border-radius:16px;
+      padding:10px;
+    }
+    .itemTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .itemTitle{font-weight:900;font-size:13px;line-height:1.2}
+    .itemMeta{margin-top:6px;color:var(--muted);font-size:12px}
+    .itemBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .small{
+      padding:8px 12px;border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      cursor:pointer;
+      font-size:12px;
+    }
+    .small.danger{background:rgba(255,0,0,.10);border-color:rgba(255,255,255,.16)}
+    .pill{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      font-size:11px;color:rgba(234,240,255,.86);
+      margin-top:8px;
+    }
+    @media(max-width:520px){ .row2{grid-template-columns:1fr} }
+  </style>
 </head>
 <body>
   <div class="bg"></div>
 
   <header class="topbar">
-    <a class="back" href="./index.html" aria-label="Back">
+    <a class="iconBtn" href="./index.html" aria-label="Back" title="Back">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
         <path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -28,32 +126,48 @@
     <section class="card">
       <h2>Token</h2>
       <div class="row">
-        <input id="token" type="password" placeholder="ADMIN_TOKEN" />
+        <input id="token" type="password" placeholder="ADMIN_TOKEN (contoh: wk123)" />
         <button id="saveToken" class="btn">Save</button>
       </div>
-      <div class="hint">Token disimpan di browser (localStorage). Jangan share.</div>
+      <div class="hint">
+        Token ini dipakai untuk POST/PUT/DELETE ke Worker (header <b>X-Admin-Token</b>). Disimpan di browser (localStorage).
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Search</h2>
+      <input id="search" type="text" placeholder="Cari judul / genre..." />
+      <div class="hint">Search cuma untuk admin list (nggak ngubah data).</div>
     </section>
 
     <section class="card">
       <h2 id="formTitle">Tambah Film</h2>
 
       <input id="id" type="text" placeholder="id (auto kalau kosong)" />
-      <input id="title" type="text" placeholder="title (wajib)" />
-      <input id="embed" type="text" placeholder="embed URL (wajib) contoh: https://www.youtube.com/embed/..." />
-      <input id="thumb" type="text" placeholder="thumb URL (poster)" />
+      <input id="titleInput" type="text" placeholder="title (wajib)" />
+
+      <input id="thumb" type="text" placeholder="thumb/poster URL" />
 
       <div class="row2">
-        <input id="year" type="number" placeholder="year" />
-        <input id="duration" type="text" placeholder="duration (misal 1j 42m)" />
+        <input id="year" type="number" placeholder="year (contoh 2025)" />
+        <input id="duration" type="text" placeholder="duration (contoh 100 Min)" />
       </div>
 
       <div class="row2">
-        <input id="quality" type="text" placeholder="quality (HD/WEB-DL/BLURAY)" />
-        <input id="source" type="text" placeholder="source (YouTube/Stream/etc)" />
+        <input id="quality" type="text" placeholder="quality (HD/WEB-DL/HDTS/CAM)" />
+        <input id="source" type="text" placeholder="source (Stream/YouTube/dll)" />
       </div>
 
-      <input id="genre" type="text" placeholder="genre (pisah koma) مثال: Action, Drama" />
-      <textarea id="desc" placeholder="desc"></textarea>
+      <input id="genre" type="text" placeholder="genre (pisah koma) contoh: Horror, Trending" />
+
+      <h2 style="margin-top:14px">Servers</h2>
+      <input id="embed"  type="text" placeholder="Server 1 (embed) - wajib minimal 1" />
+      <input id="embed2" type="text" placeholder="Server 2 (embed2) - optional" />
+      <input id="embed3" type="text" placeholder="Server 3 (embed3) - optional" />
+      <input id="embed4" type="text" placeholder="Server 4 (embed4) - optional" />
+      <input id="embed5" type="text" placeholder="Server 5 (embed5) - optional" />
+
+      <textarea id="desc" placeholder="deskripsi"></textarea>
 
       <div class="row">
         <button id="submit" class="btn primary">Save</button>
@@ -70,8 +184,9 @@
   </main>
 
   <script>
+    // ganti kalau worker lo berubah
     window.API_FILMS = "https://raspy-violet-ba97.milikyahya997.workers.dev/api/films";
   </script>
-  <script src="admin.js"></script>
+  <script src="./admin.js"></script>
 </body>
 </html>
