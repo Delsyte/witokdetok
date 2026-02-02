@@ -1,3 +1,4 @@
+// player.js (UPDATED: dynamic Server 1–5 buttons)
 const mount = document.getElementById("playerMount");
 
 const titleEl = document.getElementById("title");
@@ -9,10 +10,6 @@ const openEmbedBtn = document.getElementById("openEmbed");
 const copyEmbedBtn = document.getElementById("copyEmbed");
 const shareBtn = document.getElementById("shareBtn");
 
-const srv1 = document.getElementById("srv1");
-const srv2 = document.getElementById("srv2");
-const srv3 = document.getElementById("srv3");
-
 const gridEl = document.getElementById("grid");
 const emptyEl = document.getElementById("empty");
 
@@ -22,11 +19,12 @@ const retryEl = document.getElementById("retry");
 
 document.getElementById("year").textContent = new Date().getFullYear();
 
+const API = window.API_FILMS;
+
 function esc(s){
   return String(s ?? "")
     .replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
 
@@ -53,20 +51,18 @@ function isDirectVideo(url){
   return u.endsWith(".mp4") || u.includes(".mp4?") || u.endsWith(".m3u8") || u.includes(".m3u8?");
 }
 
-/**
- * Smart render:
- * - mp4/m3u8 -> <video>
- * - everything else -> iframe
- * - if iframe blocked by host, user can still Open
- */
 function renderPlayer(url){
   const u = String(url || "").trim();
   if (!u) {
-    mount.innerHTML = `<div class="blockedBox"><h3>Embed kosong</h3><p class="hint">Isi field embed/server dulu.</p></div>`;
+    mount.innerHTML = `
+      <div class="blockedBox">
+        <h3>Server belum tersedia</h3>
+        <p class="hint">Isi link server di admin panel.</p>
+      </div>
+    `;
     return;
   }
 
-  // direct video (legal host / direct)
   if (isDirectVideo(u)) {
     const type = u.toLowerCase().includes(".m3u8")
       ? "application/vnd.apple.mpegurl"
@@ -80,7 +76,6 @@ function renderPlayer(url){
     return;
   }
 
-  // iframe embed
   mount.innerHTML = `
     <iframe
       src="${esc(u)}"
@@ -104,31 +99,7 @@ function renderMeta(f){
   if (f.source) items.push(String(f.source));
   genres.slice(0, 6).forEach(g => items.push(g));
 
-  metaEl.innerHTML = items.map(pill).join("");
-}
-
-function setActive(btn){
-  [srv1,srv2,srv3].forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-}
-
-function loadServer(url, btn){
-  if(!url){
-    // biar halus, gak alert kasar
-    mount.innerHTML = `
-      <div class="blockedBox">
-        <h3>Server belum tersedia</h3>
-        <p class="hint">Isi link server ini di admin panel.</p>
-      </div>
-    `;
-    return;
-  }
-  setActive(btn);
-  renderPlayer(url);
-
-  // update Open/Copy ikut server yg aktif
-  openEmbedBtn.onclick = () => window.open(url, "_blank", "noopener,noreferrer");
-  copyEmbedBtn.onclick = async () => { try{ await navigator.clipboard.writeText(url); }catch{} };
+  if (metaEl) metaEl.innerHTML = items.map(pill).join("");
 }
 
 const PLAY_SVG = `<svg viewBox="0 0 24 24" fill="none">
@@ -148,7 +119,7 @@ function card(f) {
     : `<div class="posterFallback"><span>WK</span></div>`;
 
   return `
-    <article class="card" data-id="${esc(f.id || "")}" data-title="${esc(f.title || "")}" data-embed="${esc(f.embed || "")}">
+    <article class="card" data-id="${esc(f.id || "")}">
       <div class="poster">
         ${poster}
         <div class="overlay" aria-hidden="true">
@@ -181,86 +152,159 @@ function pickRandom(list, count){
   return a.slice(0, count);
 }
 
+/* =========================
+   Dynamic Server Buttons 1–5
+   ========================= */
+function getServerRow(){
+  // support: <div class="serverRow"> or id="serverRow"
+  return document.getElementById("serverRow") || document.querySelector(".serverRow");
+}
+
+function buildServers(film){
+  // server 1 = embed, server 2..5 = embed2..embed5
+  const servers = [];
+  const s1 = String(film.embed || "").trim();
+  const s2 = String(film.embed2 || "").trim();
+  const s3 = String(film.embed3 || "").trim();
+  const s4 = String(film.embed4 || "").trim();
+  const s5 = String(film.embed5 || "").trim();
+
+  if (s1) servers.push({ label: "Server 1", url: s1 });
+  if (s2) servers.push({ label: "Server 2", url: s2 });
+  if (s3) servers.push({ label: "Server 3", url: s3 });
+  if (s4) servers.push({ label: "Server 4", url: s4 });
+  if (s5) servers.push({ label: "Server 5", url: s5 });
+
+  // fallback: kalau kosong semua, tetap kasih 1 button disabled
+  if (!servers.length) servers.push({ label: "Server 1", url: "" });
+
+  return servers;
+}
+
+function setActiveButton(btn){
+  const row = getServerRow();
+  if (!row) return;
+  row.querySelectorAll(".srvBtn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+function applyServer(url){
+  renderPlayer(url);
+  if (openEmbedBtn) openEmbedBtn.onclick = () => url && window.open(url, "_blank", "noopener,noreferrer");
+  if (copyEmbedBtn) copyEmbedBtn.onclick = async () => {
+    if (!url) return;
+    try { await navigator.clipboard.writeText(url); } catch {}
+  };
+}
+
+function renderServerButtons(film){
+  const row = getServerRow();
+  if (!row) return;
+
+  const servers = buildServers(film);
+  row.innerHTML = ""; // hapus tombol lama (srv1/srv2/srv3) kalau ada
+
+  servers.forEach((s, idx) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "srvBtn" + (idx === 0 ? " active" : "");
+    btn.textContent = s.label;
+    btn.disabled = !s.url;
+
+    btn.addEventListener("click", () => {
+      if (!s.url) return;
+      setActiveButton(btn);
+      applyServer(s.url);
+    });
+
+    row.appendChild(btn);
+  });
+
+  // load default server pertama yang available
+  const first = servers.find(x => x.url) || servers[0];
+  applyServer(first.url);
+}
+
+/* =========================
+   Main load
+   ========================= */
 async function load(){
-  errorEl.classList.add("hidden");
+  if (errorEl) errorEl.classList.add("hidden");
 
   try{
     const id = getParam("id");
     const embedParam = decodeURIComponent(getParam("embed") || "");
     const titleParam = decodeURIComponent(getParam("title") || "");
 
-    const res = await fetch(window.API_FILMS, { cache: "no-store" });
+    const res = await fetch(API, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const films = await res.json();
     if (!Array.isArray(films)) throw new Error("Bad data");
 
-    // find current
+    // cari film
     let current =
       (id && films.find(f => String(f.id || "") === String(id))) ||
       films.find(f => String(f.embed || "") === String(embedParam)) ||
       films.find(f => String(f.title || "") === String(titleParam));
 
-    if (!current) current = { title: titleParam || "Untitled", embed: embedParam };
+    if (!current) {
+      current = {
+        id: id || "",
+        title: titleParam || "Untitled",
+        embed: embedParam,
+        quality: "HD",
+        genre: [],
+        desc: "",
+        source: "Stream",
+      };
+    }
 
-    // title/meta/desc
-    titleEl.textContent = current.title || "Untitled";
-    descEl.textContent = current.desc || "";
-    qualityBadge.textContent = normQuality(current.quality);
+    // info
+    if (titleEl) titleEl.textContent = current.title || "Untitled";
+    if (descEl) descEl.textContent = current.desc || "";
+    if (qualityBadge) qualityBadge.textContent = normQuality(current.quality);
     renderMeta(current);
 
-    // Share
-    shareBtn.onclick = async () => {
-      try{
-        const shareUrl = location.href;
-        if (navigator.share) await navigator.share({ title: current.title || "Witokdetok", url: shareUrl });
-        else await navigator.clipboard.writeText(shareUrl);
-      }catch{}
-    };
+    // share
+    if (shareBtn) {
+      shareBtn.onclick = async () => {
+        try{
+          const shareUrl = location.href;
+          if (navigator.share) await navigator.share({ title: current.title || "Witokdetok", url: shareUrl });
+          else await navigator.clipboard.writeText(shareUrl);
+        } catch {}
+      };
+    }
 
-    // ✅ servers from KV fields
-    const s1 = String(current.embed || "").trim();
-    const s2 = String(current.embed2 || "").trim();
-    const s3 = String(current.embed3 || "").trim();
+    // ✅ server buttons (1–5) + load default
+    renderServerButtons(current);
 
-    // enable/disable buttons
-    srv1.disabled = !s1;
-    srv2.disabled = !s2;
-    srv3.disabled = !s3;
-
-    // default load server 1 if exist, else first available
-    if (s1) loadServer(s1, srv1);
-    else if (s2) loadServer(s2, srv2);
-    else if (s3) loadServer(s3, srv3);
-    else loadServer("", srv1);
-
-    srv1.onclick = () => loadServer(s1, srv1);
-    srv2.onclick = () => loadServer(s2, srv2);
-    srv3.onclick = () => loadServer(s3, srv3);
-
-    // recommended
+    // random lainnya
     const others = films.filter(f => String(f.id || "") !== String(current.id || ""));
     const picks = pickRandom(others, 9);
 
-    gridEl.innerHTML = picks.map(card).join("");
-    emptyEl.classList.toggle("hidden", picks.length !== 0);
+    if (gridEl) gridEl.innerHTML = picks.map(card).join("");
+    if (emptyEl) emptyEl.classList.toggle("hidden", picks.length !== 0);
 
-    gridEl.querySelectorAll(".card").forEach(el => {
-      el.addEventListener("click", () => {
-        const f = picks.find(x => String(x.id||"") === String(el.dataset.id)) || {
-          id: el.dataset.id, title: el.dataset.title, embed: el.dataset.embed
-        };
-        location.href = toPlayerUrl(f);
+    if (gridEl) {
+      gridEl.querySelectorAll(".card").forEach(el => {
+        el.addEventListener("click", () => {
+          const fid = el.getAttribute("data-id") || "";
+          const f = picks.find(x => String(x.id || "") === String(fid));
+          if (!f) return;
+          location.href = toPlayerUrl(f);
+        });
       });
-    });
+    }
 
   } catch(e){
     console.error(e);
-    errorMsgEl.textContent = `API failed: ${e.message}`;
-    errorEl.classList.remove("hidden");
-    gridEl.innerHTML = "";
-    emptyEl.classList.add("hidden");
+    if (errorMsgEl) errorMsgEl.textContent = `API failed: ${e.message}`;
+    if (errorEl) errorEl.classList.remove("hidden");
+    if (gridEl) gridEl.innerHTML = "";
+    if (emptyEl) emptyEl.classList.add("hidden");
   }
 }
 
-retryEl.addEventListener("click", load);
+if (retryEl) retryEl.addEventListener("click", load);
 load();
